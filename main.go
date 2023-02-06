@@ -63,7 +63,7 @@ func convert(in, out, outFmt string) error {
 	if finfo, err := os.Stat(in); err != nil {
 		return err
 	} else if finfo.IsDir() {
-		return errors.New("not file")
+		return fmt.Errorf("%s is directory", in)
 	}
 
 	fin, err := os.Open(in)
@@ -75,7 +75,7 @@ func convert(in, out, outFmt string) error {
 	// 入力の形式に対応してるか
 	encode, ok := fmt2Encoder[outFmt]
 	if !ok {
-		return errors.New("not supported image format")
+		return fmt.Errorf("%s is not a supported image format", outFmt)
 	}
 
 	// 画像以外のファイルを除外,変換前の画像
@@ -97,14 +97,14 @@ func convert(in, out, outFmt string) error {
 // go run main.go filename fileextension
 func main() {
 
-	var uiOutdir string
+	var uiOutdir, outFmt string
 	flag.StringVar(&uiOutdir, "o", "", "output directry")
+	flag.StringVar(&outFmt, "f", "", "format")
 	flag.Parse()
 
 	srcGlob := flag.Arg(0)
-	targetFmt := flag.Arg(1)
 
-	if srcGlob == "" || targetFmt == "" {
+	if srcGlob == "" || outFmt == "" {
 		exitOnError(errors.New("invalid args error"))
 	}
 
@@ -112,6 +112,11 @@ func main() {
 	exitOnError(err)
 
 	fmt.Println(src)
+
+	// 入力の形式に対応してるか
+	if _, ok := fmt2Encoder[outFmt]; !ok {
+		exitOnError(fmt.Errorf("%s is not a supported image format", outFmt))
+	}
 
 	for _, fin := range src {
 
@@ -122,9 +127,9 @@ func main() {
 			outdir = uiOutdir
 		}
 		base := getFileNameWithoutExt(fin)
-		fo := filepath.Join(outdir, base) + "." + targetFmt
+		fo := filepath.Join(outdir, base) + "." + outFmt
 
-		err = convert(fin, fo, targetFmt)
+		err = convert(fin, fo, outFmt)
 		if err != nil {
 			fmt.Println(err)
 		}
