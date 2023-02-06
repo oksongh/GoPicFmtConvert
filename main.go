@@ -114,16 +114,20 @@ func main() {
 	fmt.Println(src)
 
 	for _, fin := range src {
-		base := getFileNameWithoutExt(fin)
 
-		fo := ""
+		outdir := ""
 		if uiOutdir == "" {
-			fo = filepath.Join(filepath.Dir(fin), base) + "." + targetFmt
+			outdir = filepath.Dir(fin)
 		} else {
-			fo = filepath.Join(uiOutdir, base) + "." + targetFmt
+			outdir = uiOutdir
 		}
-		// base := getFullPathWithoutExt(in)
-		convert(fin, fo, targetFmt)
+		base := getFileNameWithoutExt(fin)
+		fo := filepath.Join(outdir, base) + "." + targetFmt
+
+		err = convert(fin, fo, targetFmt)
+		if err != nil {
+			fmt.Println(err)
+		}
 
 	}
 
