@@ -14,10 +14,12 @@ import (
 )
 
 // https://qiita.com/KemoKemo/items/d135ddc93e6f87008521
+// hoge/fuga/baz.txt => baz
 func getFileNameWithoutExt(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }
 
+// hoge/fuga/baz.txt => hoge/fuga/baz
 func getFullPathWithoutExt(path string) string {
 	return path[:len(path)-len(filepath.Ext(path))]
 }
@@ -55,40 +57,48 @@ var fmt2Encoder map[string]Encode = map[string]Encode{
 	"gif":  gifEncode,
 }
 
-func convert(in, out, outFmt string) {
+func convert(in, out, outFmt string) error {
+
 	// ディレクトリ除外
-	if finfo, err := os.Stat(in); err != nil || finfo.IsDir() {
-		return
+	if finfo, err := os.Stat(in); err != nil {
+		return err
+	} else if finfo.IsDir() {
+		return errors.New("not file")
 	}
 
 	fin, err := os.Open(in)
-	exitOnError(err)
+	if err != nil {
+		return err
+	}
 	defer fin.Close()
 
-	// 画像以外除外,元の画像の形式
+	// 入力の形式に対応してるか
+	encode, ok := fmt2Encoder[outFmt]
+	if !ok {
+		return errors.New("not supported image format")
+	}
+
+	// 画像以外のファイルを除外,変換前の画像
 	image, _, err := image.Decode(fin)
 	if err != nil {
-		return
+		return err
 	}
 
-	base := getFullPathWithoutExt(in)
-
-	fo, err := os.Create(base + "." + outFmt)
-	exitOnError(err)
+	fo, err := os.Create(out)
+	if err != nil {
+		return err
+	}
 	defer fo.Close()
 
-	if encode, ok := fmt2Encoder[outFmt]; !ok {
-		exitOnError(errors.New("not supported image format"))
-	} else {
-		encode(fo, image)
-	}
+	encode(fo, image)
+	return nil
 }
 
 // go run main.go filename fileextension
 func main() {
 
-	// var output string
-	// flag.StringVar(&output, "o", "", "output directry")
+	var uiOutdir string
+	flag.StringVar(&uiOutdir, "o", "", "output directry")
 	flag.Parse()
 
 	srcGlob := flag.Arg(0)
@@ -103,34 +113,18 @@ func main() {
 
 	fmt.Println(src)
 
-	for _, fname := range src {
+	for _, fin := range src {
+		base := getFileNameWithoutExt(fin)
 
-		// ディレクトリ除外
-		if finfo, err := os.Stat(fname); err != nil || finfo.IsDir() {
-			continue
-		}
-
-		fin, err := os.Open(fname)
-		exitOnError(err)
-		defer fin.Close()
-
-		// 画像以外除外,元の画像の形式
-		image, _, err := image.Decode(fin)
-		if err != nil {
-			continue
-		}
-
-		base := getFullPathWithoutExt(fname)
-
-		fo, err := os.Create(base + "." + targetFmt)
-		exitOnError(err)
-		defer fo.Close()
-
-		if encode, ok := fmt2Encoder[targetFmt]; !ok {
-			exitOnError(errors.New("not supported image format"))
+		fo := ""
+		if uiOutdir == "" {
+			fo = filepath.Join(filepath.Dir(fin), base) + "." + targetFmt
 		} else {
-			encode(fo, image)
+			fo = filepath.Join(uiOutdir, base) + "." + targetFmt
 		}
+		// base := getFullPathWithoutExt(in)
+		convert(fin, fo, targetFmt)
+
 	}
 
 }
