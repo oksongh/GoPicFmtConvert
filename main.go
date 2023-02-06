@@ -58,16 +58,17 @@ var fmt2Encoder map[string]Encode = map[string]Encode{
 	"gif":  gifEncode,
 }
 
-func convert(in, out, outFmt string) error {
+func convert(inPath, outPath, outFmt string) error {
 
 	// ディレクトリ除外
-	if finfo, err := os.Stat(in); err != nil {
+	if finfo, err := os.Stat(inPath); err != nil {
 		return err
 	} else if finfo.IsDir() {
-		return fmt.Errorf("%s is directory", in)
+		return fmt.Errorf("%s is directory", inPath)
 	}
 
-	fin, err := os.Open(in)
+	fin, err := os.Open(inPath)
+
 	if err != nil {
 		return err
 	}
@@ -85,7 +86,7 @@ func convert(in, out, outFmt string) error {
 		return err
 	}
 
-	fo, err := os.Create(out)
+	fo, err := os.Create(outPath)
 	if err != nil {
 		return err
 	}
@@ -108,14 +109,11 @@ func main() {
 	flag.StringVar(&outFmt, "f", "", "format "+strings.Join(fmts, "|"))
 	flag.Parse()
 
-	srcGlob := flag.Arg(0)
+	src := flag.Args()
 
-	if srcGlob == "" || outFmt == "" {
+	if len(src) == 0 || outFmt == "" {
 		exitOnError(errors.New("invalid args error"))
 	}
-
-	src, err := filepath.Glob(srcGlob)
-	exitOnError(err)
 
 	fmt.Println(src)
 
@@ -132,10 +130,11 @@ func main() {
 		} else {
 			outdir = uiOutdir
 		}
+
 		base := getFileNameWithoutExt(fin)
 		fo := filepath.Join(outdir, base) + "." + outFmt
 
-		err = convert(fin, fo, outFmt)
+		err := convert(fin, fo, outFmt)
 		if err != nil {
 			fmt.Println(err)
 		}
