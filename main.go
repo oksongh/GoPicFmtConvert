@@ -110,6 +110,7 @@ func main() {
 	flag.Parse()
 
 	src := flag.Args()
+	outFmt = strings.ToLower(outFmt)
 
 	if len(src) == 0 || outFmt == "" {
 		exitOnError(errors.New("invalid args error"))
