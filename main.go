@@ -105,7 +105,7 @@ func main() {
 	for key := range fmt2Encoder {
 		fmts = append(fmts, key)
 	}
-	flag.StringVar(&outFmt, "f", "", "format"+strings.Join(fmts, "|"))
+	flag.StringVar(&outFmt, "f", "", "format "+strings.Join(fmts, "|"))
 	flag.Parse()
 
 	srcGlob := flag.Arg(0)
