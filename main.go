@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // https://qiita.com/KemoKemo/items/d135ddc93e6f87008521
@@ -99,7 +100,12 @@ func main() {
 
 	var uiOutdir, outFmt string
 	flag.StringVar(&uiOutdir, "o", "", "output directry")
-	flag.StringVar(&outFmt, "f", "", "format")
+
+	fmts := make([]string, 0, len(fmt2Encoder))
+	for key := range fmt2Encoder {
+		fmts = append(fmts, key)
+	}
+	flag.StringVar(&outFmt, "f", "", "format"+strings.Join(fmts, "|"))
 	flag.Parse()
 
 	srcGlob := flag.Arg(0)
