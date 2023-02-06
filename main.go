@@ -21,9 +21,9 @@ func getFileNameWithoutExt(path string) string {
 }
 
 // hoge/fuga/baz.txt => hoge/fuga/baz
-func getFullPathWithoutExt(path string) string {
-	return path[:len(path)-len(filepath.Ext(path))]
-}
+// func getFullPathWithoutExt(path string) string {
+// 	return path[:len(path)-len(filepath.Ext(path))]
+// }
 func exitOnError(err error) {
 
 	if err != nil {
@@ -44,20 +44,26 @@ func exitOnError(err error) {
 
 type Encode func(io.Writer, image.Image) error
 
+// jpgのエンコーダをデフォルトオプションで呼び出す。
+// png.Encodeと同じシグニチャにするため
 var jpegEncode Encode = func(w io.Writer, m image.Image) error {
 	return jpeg.Encode(w, m, nil)
 }
+
+// png.Encodeと同じシグニチャにするため
 var gifEncode Encode = func(w io.Writer, m image.Image) error {
 	return gif.Encode(w, m, nil)
 }
 
-var fmt2Encoder map[string]Encode = map[string]Encode{
+// フォーマットとエンコーダの対応付け
+var fmt2Encoder = map[string]Encode{
 	"jpeg": jpegEncode,
 	"jpg":  jpegEncode,
 	"png":  png.Encode,
 	"gif":  gifEncode,
 }
 
+// inPathで指定したファイルをoutPathに、outFmtのフォーマットで保存
 func convert(inPath, outPath, outFmt string) error {
 
 	// ディレクトリ除外
@@ -115,8 +121,6 @@ func main() {
 	if len(src) == 0 || outFmt == "" {
 		exitOnError(errors.New("invalid args error"))
 	}
-
-	fmt.Println(src)
 
 	// 入力の形式に対応してるか
 	if _, ok := fmt2Encoder[outFmt]; !ok {
