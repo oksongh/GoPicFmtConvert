@@ -1,0 +1,3 @@
+test_out/*
+testcase/*
+!testcase/*.png
