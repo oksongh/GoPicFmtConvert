@@ -20,7 +20,7 @@ GoPicFmtConvert -f jpg -o test_out testcase/*.png
 移動
 ```bash
 mkdir dir
-mv *.jpg 
+mv *.jpg dir
 ```
 
 bzipで圧縮
