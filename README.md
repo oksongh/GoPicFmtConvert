@@ -10,3 +10,10 @@
 ```bash
 GoPicFmtConvert -f jpg -o test_out testcase/*.png 
 ```
+
+pngのファイルをjpgにした後、bzipで圧縮
+```bash
+GoPicFmtConvert -f jpg -o test_out testcase/*.png 
+mkdir dir
+tar -cvjf dir.tar.bz2 dir/
+```
