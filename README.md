@@ -11,9 +11,24 @@
 GoPicFmtConvert -f jpg -o test_out testcase/*.png 
 ```
 
-pngのファイルをjpgにした後、bzipで圧縮
+## example
+pngのファイルをjpgに
 ```bash
 GoPicFmtConvert -f jpg -o test_out testcase/*.png 
+```
+
+移動
+```bash
 mkdir dir
+mv *.jpg 
+```
+
+bzipで圧縮
+```
+tar -cvzf dir.tar.gz dir/
+```
+
+gzipで圧縮
+```bash
 tar -cvjf dir.tar.bz2 dir/
 ```
